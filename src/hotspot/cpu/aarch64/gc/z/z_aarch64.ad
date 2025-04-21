@@ -61,6 +61,13 @@ static void z_load_barrier(MacroAssembler* masm, const MachNode* node, Address r
       ((node->barrier_data() & ZBarrierPhantom) != 0);
 
   if (on_non_strong) {
+    if (node->is_Load() && needs_acquiring_load(node)) { 
+      __ block_comment("weak vol");
+      __ increment(Address(rthread, JavaThread::offset_load_weak_volatile()));
+    } else if (node->is_Load()) {
+      __ block_comment("weak");
+      __ increment(Address(rthread, JavaThread::offset_load_weak()));
+    }
     z_keep_alive_load_barrier(masm, node, ref_addr, ref, tmp);
     return;
   }
@@ -68,6 +75,14 @@ static void z_load_barrier(MacroAssembler* masm, const MachNode* node, Address r
   if (node->barrier_data() == ZBarrierElided) {
     z_uncolor(masm, node, ref);
     return;
+  } 
+  
+  if (node->is_Load() && needs_acquiring_load(node)) {
+    __ block_comment("strong vol");
+    __ increment(Address(rthread, JavaThread::offset_load_strong_volatile()));
+  } else if (node->is_Load()) {
+    __ block_comment("strong");
+    __ increment(Address(rthread, JavaThread::offset_load_strong()));
   }
 
   ZLoadBarrierStubC2Aarch64* const stub = ZLoadBarrierStubC2Aarch64::create(node, ref_addr, ref, __ offset());
@@ -120,6 +135,8 @@ instruct zLoadP(iRegPNoSp dst, memory8 mem, rFlagsReg cr)
       ref_addr = __ legitimize_address(ref_addr, 8, rscratch2);
     }
     __ ldr($dst$$Register, ref_addr);
+    __ block_comment("load gen");
+    __ increment(Address(rthread, JavaThread::offset_load()));
     z_load_barrier(masm, this, ref_addr, $dst$$Register, rscratch1);
   %}
 

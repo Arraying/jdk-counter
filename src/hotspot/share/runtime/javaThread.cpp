@@ -113,6 +113,13 @@
 
 // Set by os layer.
 size_t      JavaThread::_stack_size_at_create = 0;
+unsigned long long JavaThread::_total_store;
+unsigned long long JavaThread::_total_atomic;
+unsigned long long JavaThread::_total_load;
+unsigned long long JavaThread::_total_load_weak;
+unsigned long long JavaThread::_total_load_weak_volatile;
+unsigned long long JavaThread::_total_load_strong;
+unsigned long long JavaThread::_total_load_strong_volatile;
 
 #ifdef DTRACE_ENABLED
 
@@ -440,6 +447,13 @@ JavaThread::JavaThread(MemTag mem_tag) :
   _suspend_flags(0),
 
   _thread_state(_thread_new),
+  _counter_store(0),
+  _counter_atomic(0),
+  _counter_load(0),
+  _counter_load_weak(0),
+  _counter_load_weak_volatile(0),
+  _counter_load_strong(0),
+  _counter_load_strong_volatile(0),
   _saved_exception_pc(nullptr),
 #ifdef ASSERT
   _no_safepoint_count(0),
@@ -673,6 +687,14 @@ JavaThread::JavaThread(ThreadFunction entry_point, size_t stack_sz, MemTag mem_t
 }
 
 JavaThread::~JavaThread() {
+  printf("total load is %lld, %lld\n", _total_load, _counter_load);
+  _total_store += _counter_store;
+  _total_atomic += _counter_atomic;
+  _total_load += _counter_load;
+  _total_load_weak += _counter_load_weak;
+  _total_load_weak_volatile += _counter_load_weak_volatile;
+  _total_load_strong += _counter_load_strong;
+  _total_load_strong_volatile += _counter_load_strong_volatile;
 
   // Enqueue OopHandles for release by the service thread.
   add_oop_handles_for_release();

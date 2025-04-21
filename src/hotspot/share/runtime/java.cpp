@@ -242,6 +242,37 @@ static void print_bytecode_count() {}
 
 #endif // PRODUCT
 
+class CollectZGCBarrierStatsClosure : public ThreadClosure {
+public:
+  unsigned long long _total_store;
+  unsigned long long _total_atomic;
+  unsigned long long _total_load;
+  unsigned long long _total_load_weak;
+  unsigned long long _total_load_weak_volatile;
+  unsigned long long _total_load_strong;
+  unsigned long long _total_load_strong_volatile;
+
+  CollectZGCBarrierStatsClosure() :
+    _total_store(0),
+    _total_atomic(0),
+    _total_load(0),
+    _total_load_weak(0),
+    _total_load_weak_volatile(0),
+    _total_load_strong(0),
+    _total_load_strong_volatile(0) {}
+
+  void do_thread(Thread* thread) {
+    printf("doing thread shenanigans\n");
+    const JavaThread* javaThread = JavaThread::cast(thread);
+    _total_store += javaThread->_total_store;
+    _total_atomic += javaThread->_total_atomic;
+    _total_load += javaThread->_total_atomic;
+    _total_load_weak += javaThread->_total_load_weak;
+    _total_load_weak_volatile += javaThread->_total_load_weak_volatile;
+    _total_load_strong += javaThread->_total_load_strong;
+    _total_load_strong_volatile += javaThread->_total_load_strong_volatile;
+  }
+};
 
 // General statistics printing (profiling ...)
 void print_statistics() {
@@ -286,6 +317,21 @@ void print_statistics() {
 #endif // COMPILER1
 #endif // INCLUDE_JVMCI
 #endif // COMPILER2
+
+  if (ZCountLoads) {
+    CollectZGCBarrierStatsClosure cl;
+    Threads_lock->lock();
+    Threads::java_threads_do(&cl);
+    Threads_lock->unlock();
+    double t = os::elapsedTime();
+    int eltime = (int)t;  // elapsed time in seconds
+    int eltimeFraction = (int) ((t - eltime) * 1000000);
+    tty->print_cr("barrier-stats,%d.%06d,%lld,%lld,%lld,%lld,%lld,%lld,%lld",
+                  eltime, eltimeFraction,
+                  cl._total_store, cl._total_atomic, cl._total_load,
+                  cl._total_load_weak, cl._total_load_weak_volatile,
+                  cl._total_load_strong, cl._total_load_strong_volatile);
+  }
 
   if (PrintNMethodStatistics) {
     nmethod::print_statistics();

@@ -253,6 +253,20 @@ class JavaThread: public Thread {
   // Safepoint support
  public:                                                        // Expose _thread_state for SafeFetchInt()
   volatile JavaThreadState _thread_state;
+  unsigned long long _counter_store;
+  unsigned long long _counter_atomic;
+  unsigned long long _counter_load;
+  unsigned long long _counter_load_weak;
+  unsigned long long _counter_load_weak_volatile;
+  unsigned long long _counter_load_strong;
+  unsigned long long _counter_load_strong_volatile;
+  static unsigned long long _total_store;
+  static unsigned long long _total_atomic;
+  static unsigned long long _total_load;
+  static unsigned long long _total_load_weak;
+  static unsigned long long _total_load_weak_volatile;
+  static unsigned long long _total_load_strong;
+  static unsigned long long _total_load_strong_volatile;
   ThreadSafepointState*          _safepoint_state;              // Holds information about a thread during a safepoint
   address                        _saved_exception_pc;           // Saved pc of instruction where last implicit exception happened
   NOT_PRODUCT(bool               _requires_cross_modify_fence;) // State used by VerifyCrossModifyFence
@@ -818,6 +832,14 @@ private:
   bool is_in_usable_stack(address adr) const {
     return is_in_stack_range_incl(adr, _stack_overflow_state.stack_reserved_zone_base());
   }
+
+  static ByteSize offset_store() { return byte_offset_of(JavaThread, _counter_store); }
+  static ByteSize offset_atomic() { return byte_offset_of(JavaThread, _counter_atomic); } 
+  static ByteSize offset_load() { return byte_offset_of(JavaThread, _counter_load); }
+  static ByteSize offset_load_weak() { return byte_offset_of(JavaThread, _counter_load_weak); }
+  static ByteSize offset_load_weak_volatile() { return byte_offset_of(JavaThread, _counter_load_weak_volatile); }
+  static ByteSize offset_load_strong() { return byte_offset_of(JavaThread, _counter_load_strong); }
+  static ByteSize offset_load_strong_volatile() { return byte_offset_of(JavaThread, _counter_load_strong_volatile); }
 
   // Misc. accessors/mutators
   static ByteSize scopedValueCache_offset()       { return byte_offset_of(JavaThread, _scopedValueCache); }

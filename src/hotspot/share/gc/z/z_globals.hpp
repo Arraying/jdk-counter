@@ -130,7 +130,10 @@
           "0: Disabled "                                                    \
           "1: Attempt contiguous reservation starting at a higher address " \
           "N: Force that many reservations, if possible")                   \
-          range(0, ZMaxVirtualReservations)
+          range(0, ZMaxVirtualReservations)                                 \
+  product(bool, ZCountLoads, false, DIAGNOSTIC,                             \
+          "TESTING AND TO BE REMOVED! counts different types of loads")
+                                                                            
 
 // end of GC_Z_FLAGS
 

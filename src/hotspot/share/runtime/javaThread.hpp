@@ -260,13 +260,6 @@ class JavaThread: public Thread {
   unsigned long long _counter_load_weak_volatile;
   unsigned long long _counter_load_strong;
   unsigned long long _counter_load_strong_volatile;
-  static unsigned long long _total_store;
-  static unsigned long long _total_atomic;
-  static unsigned long long _total_load;
-  static unsigned long long _total_load_weak;
-  static unsigned long long _total_load_weak_volatile;
-  static unsigned long long _total_load_strong;
-  static unsigned long long _total_load_strong_volatile;
   ThreadSafepointState*          _safepoint_state;              // Holds information about a thread during a safepoint
   address                        _saved_exception_pc;           // Saved pc of instruction where last implicit exception happened
   NOT_PRODUCT(bool               _requires_cross_modify_fence;) // State used by VerifyCrossModifyFence

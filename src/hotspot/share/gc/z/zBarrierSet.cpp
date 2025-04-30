@@ -101,6 +101,19 @@ void ZBarrierSet::on_thread_attach(Thread* thread) {
 }
 
 void ZBarrierSet::on_thread_detach(Thread* thread) {
+  // Update the funny counters like in the destructor.
+  if (thread->is_Java_thread()) {
+    JavaThread* const jt = JavaThread::cast(thread);
+    tty->print_cr("%lld,%lld,%lld,%lld,%lld,%lld,%lld",
+                  jt->_counter_store,
+                  jt->_counter_atomic,
+                  jt->_counter_load,
+                  jt->_counter_load_weak,
+                  jt->_counter_load_weak_volatile,
+                  jt->_counter_load_strong,
+                  jt->_counter_load_strong_volatile);
+  }
+
   // Flush and free any remaining mark stacks
   ZHeap::heap()->mark_flush_and_free(thread);
 }
